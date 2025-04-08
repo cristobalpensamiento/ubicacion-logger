@@ -1,0 +1,42 @@
+<h2>Registro de ubicación</h2>
+<button onclick="registrarUbicacion()">Registrar ubicación</button>
+
+<h3>Historial</h3>
+<ul id="historial"></ul>
+
+<script>
+function registrarUbicacion() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const hora = new Date().toISOString();
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      fetch('/api/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hora, lat, lng })
+      })
+      .then(res => res.text())
+      .then(alert)
+      .then(cargarHistorial);
+    }, () => alert("Error al obtener ubicación"));
+  }
+}
+
+function cargarHistorial() {
+  fetch('/api/mis-registros')
+    .then(res => res.json())
+    .then(data => {
+      const lista = document.getElementById('historial');
+      lista.innerHTML = '';
+      data.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = `${r.hora} - Lat: ${r.latitud}, Lng: ${r.longitud}`;
+        lista.appendChild(li);
+      });
+    });
+}
+
+window.onload = cargarHistorial;
+</script>
